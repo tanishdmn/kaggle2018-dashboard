@@ -24,11 +24,13 @@ warnings.filterwarnings("ignore")
 # -------------------------------------------------------------------
 # SIMPLE LOGIN SYSTEM (adapted from your previous app)
 # -------------------------------------------------------------------
-USERS = {
-    "user1": "pass1",
-    "Ashish Thakran": "Ashish Thakran",
-    # add more if you like
-}
+# Login credentials live in encrypted Streamlit app secrets.
+try:
+    auth_secrets = st.secrets["auth"]
+    USERS = {auth_secrets["username"]: auth_secrets["password"]}
+except Exception:
+    st.error("Login is not configured. Set [auth] username and password in Streamlit app secrets.")
+    st.stop()
 
 # Toggle authentication during development. Set to True to re-enable login.
 AUTH_ENABLED = True
@@ -98,7 +100,7 @@ def login():
             "Username",
             placeholder="Enter username",
             key="login_username",
-            help="Try: user1 or Ashish Thakran"
+            help="Enter the credentials configured for this dashboard."
         )
         password = st.text_input(
             "Password",
@@ -107,26 +109,14 @@ def login():
             key="login_password"
         )
         
-        col_a, col_b = st.columns(2)
-        with col_a:
-            if st.button("🔓 Login", use_container_width=True):
-                if USERS.get(username) == password:
-                    st.session_state["authenticated"] = True
-                    st.session_state["username"] = username
-                    st.success("✅ Login successful!")
-                    safe_rerun()
-                else:
-                    st.error("❌ Invalid credentials. Please try again.")
-        
-        with col_b:
-            st.markdown(
-                """
-                <div style="text-align: center; padding: 0.8rem; color: #a0aec0; font-size: 0.9rem;">
-                    Demo credentials: user1 / pass1
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+        if st.button("🔓 Login", use_container_width=True):
+            if USERS.get(username) == password:
+                st.session_state["authenticated"] = True
+                st.session_state["username"] = username
+                st.success("✅ Login successful!")
+                safe_rerun()
+            else:
+                st.error("❌ Invalid credentials. Please try again.")
         
         st.markdown(
             """
@@ -2329,4 +2319,3 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-
